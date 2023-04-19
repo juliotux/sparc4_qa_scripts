@@ -103,7 +103,6 @@ _defs = {
     'CYCLIND': Field(dtype=int, desc='Cycle index in sequence'),
     'NFRAMES': Field(dtype=int, desc='Number of frames in the cycle'),
     'FRAMEIND': Field(dtype=int, desc='Frame index in the cycle'),
-    'CYCLTEXP': Field(dtype=float, desc='Total cycle exposure time (s)'),
     'NSEQ': Field(dtype=int, desc='Total number of exposures in sequence'),  # special check
     'SEQINDEX': Field(dtype=int, desc='Exposure index in sequence'),
     'INSTMODE': Field(dtype=str, desc='Instrument mode: PHOT or POLAR',
@@ -132,7 +131,7 @@ _defs = {
                      allowed_values=['Open', 'Closed']),  # TODO: all passible values
     'COOLER': Field(dtype=bool, desc='CCD cooler: T or F'),
     'CCDTEMP': Field(dtype=(int, float), desc='CCD temperature (deg C)'),
-    'TGTEMP': Field(dtype=(int, float), desc='CCD Target temperature (deg C)'),
+    'TGTEMP': Field(dtype=(int, float), desc='CCD target temperature (deg C)'),
     'TEMPST': Field(dtype=str, desc='Temperature status',
                     allowed_values=['TEMPERATURE_STABILIZED']),  # TODO: all passible values
     'FRAMETRF': Field(dtype=bool, desc='Frame transfer: T or F'),
@@ -169,11 +168,14 @@ _defs = {
     'ACSVRSN': Field(dtype=str, desc='Software version of the ACS',
                      re=r'v[\d.]+',
                      re_error='ACSVRSN format must be v#.#.#'),
-    'CTRLINTE': Field(dtype=str, desc='Graphical control interface of the ACS',
+    'CTRLINTE': Field(dtype=str, desc='Graphical control interface of ACS',
                       allowed_values=['S4GUI']),
-    'ACSMODE': Field(dtype=bool, desc='ACS in simulated mode'),
-    'ICSMODE': Field(dtype=bool, desc='ICS in simulated mode'),
-    'TCSMODE': Field(dtype=bool, desc='TCS in simulated mode')
+    'ACSMODE': Field(dtype=str, desc='ACS in simulated mode',
+                     allowed_values=['Simulated', 'Real']),
+    'ICSMODE': Field(dtype=str, desc='ICS in simulated mode',
+                     allowed_values=['Simulated', 'Real']),
+    'TCSMODE': Field(dtype=str, desc='TCS in simulated mode',
+                     allowed_values=['Simulated', 'Real'])
 }
 
 
