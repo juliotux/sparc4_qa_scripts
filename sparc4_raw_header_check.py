@@ -68,6 +68,8 @@ _defs = {
     'OBSTYPE': Field(dtype=str,
                      desc='Image type: OBJECT, BIAS, FLAT, DARK, FOCUS',
                      allowed_values=['OBJECT', 'BIAS', 'FLAT', 'DARK', 'FOCUS']),
+    'INSTRUME': Field(dtype=str, desc='Instrument name',
+                      allowed_values=['SPARC4']),
     'FILENAME': Field(dtype=str, desc='File name'),  # TODO: include RE?
     'DATE-OBS': Field(dtype=str,
                       desc='UTC at start of observation (isot)',
