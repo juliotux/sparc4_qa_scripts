@@ -8,11 +8,9 @@ from dataclasses import dataclass
 from typing import List, Type
 
 
-pad = '  -> '
-
-
 @dataclass
 class Field:
+    """Single header card definitions."""
     dtype: Type  # data type of the keyword. Fits only accepts str, int, float, bool
     desc: str  # description of the keyword
     allowed_values: List = None  # list of allowed values
@@ -52,6 +50,7 @@ _defs = {
                      desc='Observatory East Longitude (DEG, 0 to 360)',
                      range=[0, 360],
                      range_error='Longitude must be between 0 and 360'),
+    'OBSATL': Field(dtype=float, desc='Observatory altitude (m)'),
 
     # Guiding Camera
     'GFOCUS': Field(dtype=None, desc='Guider focus position (mm)'),  # TODO: not defined yet
@@ -120,7 +119,7 @@ _defs = {
     'ACQMODE': Field(dtype=str, desc='Acquisition mode',
                      allowed_values=['Kinetic', '']),  # TODO: all passible values
     'PREAMP': Field(dtype=str, desc='Pre-amplifier gain'),  # TODO: include format or RE?
-    'READRATE': Field(dtype=str, desc='Readout rate (MHz)'),  # TODO: include format or RE?
+    'READRATE': Field(dtype=(int, float), desc='Readout rate (MHz)'),
     'VSHIFT': Field(dtype=float, desc='Vertical shift speed (ms)'),
     'TRIGGER': Field(dtype=str, desc='Trigger mode',
                      allowed_values=['Internal', 'External']),  # TODO: all passible values
@@ -182,9 +181,9 @@ _defs = {
 class Printer:
     """Printer class to print to stdout or file."""
     file: str = None
-    fmt: str = None
-    table = None
+    fmt: str = None  # txt or csv
     c = None  # csv writer
+    pad = '  -> '
 
     def __init__(self, file=None, fmt='txt'):
         self.file = file
@@ -203,7 +202,7 @@ class Printer:
 
     def _get_str(self, keyword, value, error):
         """Get the string for printing and writing to file."""
-        return pad + f'{keyword}:{value} {error}'
+        return self.pad + f'{keyword}:{value} {error}'
 
     def print(self, filename, keyword, value, error):
         """Print to stdout and save to report."""
