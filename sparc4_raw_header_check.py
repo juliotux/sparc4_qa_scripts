@@ -69,6 +69,9 @@ _defs = {
                       desc='Name(s) of observer(s)'),
     'OBJECT': Field(dtype=str,
                     desc='Object name'),
+    'OBSTYPE': Field(dtype=str,
+                     desc='Image type: OBJECT, BIAS, FLAT, DARK, FOCUS',
+                     allowed_values=['OBJECT', 'BIAS', 'FLAT', 'DARK', 'FOCUS']),
     'FILENAME': Field(dtype=str, desc='File name'),  # TODO: include RE?
     'DATE-OBS': Field(dtype=str,
                       desc='UTC at start of observation (isot)',
@@ -168,7 +171,7 @@ _defs = {
                      re=r'v[\d.]+',
                      re_error='ACSVRSN format must be v#.#.#'),
     'CTRLINTE': Field(dtype=str, desc='Graphical control interface of the ACS',
-                      allowed_values=['SAGUI']),
+                      allowed_values=['S4GUI']),
     'ACSMODE': Field(dtype=bool, desc='ACS in simulated mode'),
     'ICSMODE': Field(dtype=bool, desc='ICS in simulated mode'),
     'TCSMODE': Field(dtype=bool, desc='TCS in simulated mode')
@@ -189,7 +192,8 @@ def main():
             # non-std keys found
             for k in hdu.header.keys():
                 if k not in _defs:
-                    print(pad + f'{k} not in the standard.')
+                    if k not in ['COMMENT', 'HISTORY']:
+                        print(pad + f'{k} not in the standard.')
             # check all std keys
             for k, v in _defs.items():
                 if k not in hdu.header:
@@ -203,8 +207,9 @@ def main():
                 # check type
                 if v.dtype is not None and \
                    not isinstance(hdu.header[k], v.dtype):
-                    print(pad + f'{k} value {type(hdu.header[k])} '
-                          f'do not comply {v.type} format.')
+                    print(pad + f'{k}: {hdu.header[k]} {type(hdu.header[k])} '
+                          f'do not comply {v.dtype} format.')
+                    continue
                 # check allowed values
                 if v.allowed_values is not None and \
                    hdu.header[k] not in v.allowed_values:
@@ -212,11 +217,11 @@ def main():
                           f'{v.allowed_values} allowed values.')
                 # re for str values
                 if v.re is not None and not re.match(v.re, hdu.header[k]):
-                    print(pad + f'{k}: {v.re_error}.')
+                    print(pad + f'{k}: {hdu.header[k]} -> {v.re_error}.')
                 # range for int and float values
                 if v.range is not None and \
                    not v.range[0] <= hdu.header[k] <= v.range[1]:
-                    print(pad + f'{k}: {v.range_error}.')
+                    print(pad + f'{k}: {hdu.header[k]} -> {v.range_error}.')
 
 
 if __name__ == '__main__':
