@@ -1,18 +1,14 @@
 #!/bin/python3
 
-import sys
 import re
+import csv
+import argparse
 from astropy.io import fits
 from dataclasses import dataclass
 from typing import List, Type
 
 
 pad = '  -> '
-
-
-# TODO: use argparse
-# TODO: output format, text, csv
-# TODO: output file
 
 
 @dataclass
@@ -179,13 +175,56 @@ _defs = {
 }
 
 
-def main():
-    for file in sys.argv[1:]:
-        print(file + ' report:')
+class Printer:
+    """Printer class to print to stdout or file."""
+    file: str = None
+    fmt: str = None
+    table = None
+    c = None  # csv writer
+
+    def __init__(self, file=None, fmt='txt'):
+        self.file = file
+        if file is not None:
+            self.file = open(file, 'w')
+        self.fmt = fmt
+
+        # only execute write when the two are set.
+        if self.fmt in ['txt', 'csv'] and file is not None:
+            self._do_write = True
+        else:
+            self._do_write = False
+
+        if self.fmt == 'csv':
+            self.c = csv.writer(self.file)
+
+    def _get_str(self, keyword, value, error):
+        """Get the string for printing and writing to file."""
+        return pad + f'{keyword}:{value} {error}'
+
+    def print(self, filename, keyword, value, error):
+        """Print to stdout and save to report."""
+        s = self._get_str(keyword, value, error)
+        print(s)
+        if self._do_write and self.fmt == 'txt':
+            self.file.write(s+'\n')
+        if self._do_write and self.fmt == 'csv':
+            self.c.writerow([filename, keyword, value, error])
+
+    def init_report(self, filename):
+        """Print the report initialization."""
+        print(filename + ' report:')
+        if self._do_write and self.fmt == 'txt':
+            self.file.write(filename + 'report:\n')
+
+
+def main(files, printer):
+    for file in files:
+        printer.init_report(file)
         with fits.open(file) as hdul:
             # SPARC4 Raw images must have only one HDU
             if len(hdul) != 1:
-                print(pad + f'Only one HDU expected. {len(hdul)} found.')
+                printer.print(file, None, None,
+                              f'Only one HDU expected. {len(hdul)} found.')
                 continue
 
             # Check header keys
@@ -193,38 +232,57 @@ def main():
             # non-std keys found
             for k in hdu.header.keys():
                 if k not in _defs:
+                    h_v = hdu.header[k]
                     if k not in ['COMMENT', 'HISTORY']:
-                        print(pad + f'{k} not in the standard.')
+                        printer.print(file, k, h_v,
+                                      f'{k} not in the standard.')
             # check all std keys
             for k, v in _defs.items():
                 if k not in hdu.header:
-                    print(pad + f'{k} not found in header.')
+                    printer.print(file, k, None, f'{k} not found in header.')
                     continue
 
                 h_v = hdu.header[k]
                 # check description
-                if v.desc != hdu.header.comments[k]:
-                    print(pad + f'{k} description does not match. '
-                          f'Expected: "{v.desc}". '
-                          f'Found "{hdu.header.comments[k]}".')
+                comm = hdu.header.comments[k]
+                if v.desc != comm:
+                    printer.print(file, k, h_v,
+                                  f'description does not match. '
+                                  f'Expected: "{v.desc}". '
+                                  f'Found "{comm}".')
                 # check type
                 if v.dtype is not None and \
                    not isinstance(h_v, v.dtype):
-                    print(pad + f'{k}: {h_v} {type(h_v)} '
-                          f'do not comply {v.dtype} format.')
+                    printer.print(file, k, h_v, f'{type(h_v)} '
+                                  f'do not comply {v.dtype} format.')
                     continue
                 # check allowed values
                 if v.allowed_values is not None and \
                    h_v not in v.allowed_values:
-                    print(pad + f'{k} value {h_v} is not in '
-                          f'{v.allowed_values} allowed values.')
+                    printer.print(file, k, h_v,
+                                  'value is not in '
+                                  f'{v.allowed_values} allowed values.')
                 # re for str values
                 if v.re is not None and not re.match(v.re, h_v):
-                    print(pad + f'{k}: {h_v} -> {v.re_error}.')
+                    printer.print(file, k, h_v, v.re_error)
                 # range for int and float values
                 if v.range is not None and not v.range[0] <= h_v <= v.range[1]:
-                    print(pad + f'{k}: {h_v} -> {v.range_error}.')
+                    printer.print(file, k, h_v, v.range_error)
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(
+        prog='parc4_raw_header_checker',
+        description='Check SPARC4 raw image headers standards.')
+    parser.add_argument('-o', '--output', type=str,
+                        help='Output file name to save the report.')
+    parser.add_argument('-f', '--format', type=str,
+                        choices=['txt', 'csv'], default='txt',
+                        help='Format of the data to save the report. '
+                        'txt: plain text with the printed messages here.'
+                        ' csv: comma separated values table.')
+    parser.add_argument('files', type=str, nargs='+')
+
+    args = parser.parse_args()
+    printer = Printer(args.output, args.format)
+    main(args.files, printer)
