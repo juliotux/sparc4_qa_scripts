@@ -10,6 +10,11 @@ from typing import List, Type
 pad = '  -> '
 
 
+# TODO: use argparse
+# TODO: output format, text, csv
+# TODO: output file
+
+
 @dataclass
 class Field:
     dtype: Type  # data type of the keyword. Fits only accepts str, int, float, bool
