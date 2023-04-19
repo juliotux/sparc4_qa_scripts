@@ -87,13 +87,13 @@ _defs = {
                     re_error='Date format must be YYYY-MM-DD'),
     'RA': Field(dtype=str, desc='Right ascension: HH:MM:SS.SSS',
                 re=r'\d{2}:\d{2}:\d{2}\.\d{3}',
-                re_error='RA format must be HH:MM:SS'),
+                re_error='RA format must be HH:MM:SS.SSS'),
     'DEC': Field(dtype=str, desc='Declination: +- DD:MM:SS.SSS',
                  re=r'[+-]\d{2}:\d{2}:\d{2}\.\d{3}',
-                 re_error='DEC format must be +-DD:MM:SS'),
+                 re_error='DEC format must be +-DD:MM:SS.SSS'),
     'EQUINOX': Field(dtype=float, desc='Equinox  of coordinates',
                      allowed_values=[2000.0]),
-    'EXPTIME': Field(dtype=float, desc='Exposure time (s)'),
+    'EXPTIME': Field(dtype=(int, float), desc='Exposure time (s)'),
 
     # SPARC4 Specific
     'CHANNEL': Field(dtype=int,
@@ -133,14 +133,14 @@ _defs = {
     'SHUTTER': Field(dtype=str, desc='Shutter mode',
                      allowed_values=['Open', 'Closed']),  # TODO: all passible values
     'COOLER': Field(dtype=bool, desc='CCD cooler: T or F'),
-    'CCDTEMP': Field(dtype=float, desc='CCD temperature (deg C)'),
-    'TGTEMP': Field(dtype=float, desc='CCD Target temperature (deg C)'),
+    'CCDTEMP': Field(dtype=(int, float), desc='CCD temperature (deg C)'),
+    'TGTEMP': Field(dtype=(int, float), desc='CCD Target temperature (deg C)'),
     'TEMPST': Field(dtype=str, desc='Temperature status',
                     allowed_values=['TEMPERATURE_STABILIZED']),  # TODO: all passible values
     'FRAMETRF': Field(dtype=bool, desc='Frame transfer: T or F'),
     'VCLKAMP': Field(dtype=str, desc='Clock amplitude: Normal, +1, +2, +3, +4',
                      allowed_values=['Normal', '+1', '+2', '+3', '+4']),
-    'GAIN': Field(dtype=float, desc='Gain (e-/ADU)'),
+    'GAIN': Field(dtype=(int, float), desc='Gain (e-/ADU)'),
     'RDNOISE': Field(dtype=float, desc='Read noise (e-)'),
 
     # Telescope and TCS
@@ -152,18 +152,19 @@ _defs = {
     'TCSDATE': Field(dtype=str, desc='TCS UT date: DD/MM/YY HH:MM:SS',
                      re=r'\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}',
                      re_error='TCSDATE format must be DD/MM/YY HH:MM:SS'),
-    'INSTROT': Field(dtype=float, desc='Instrument rotator angle in degrees',
+    'INSTROT': Field(dtype=(int, float),
+                     desc='Instrument rotator angle in degrees',
                      range=[0, 360],
                      range_error='INSTROT must be between 0 and 360'),
 
     # Weather
-    'EXTTEMP': Field(dtype=float,
+    'EXTTEMP': Field(dtype=(int, float),
                      desc='Temperature (deg C), weather tower'),
     'AIRMASS': Field(dtype=float,
                      desc='Airmass at start of observation'),
-    'PRESSURE': Field(dtype=float,
+    'PRESSURE': Field(dtype=(int, float),
                       desc='Barometric pressure (mb), weather tower'),
-    'HUMIDITY': Field(dtype=float,
+    'HUMIDITY': Field(dtype=(int, float),
                       desc='Relative humidity (%), weather tower'),
 
     # Software
@@ -199,6 +200,8 @@ def main():
                 if k not in hdu.header:
                     print(pad + f'{k} not found in header.')
                     continue
+
+                h_v = hdu.header[k]
                 # check description
                 if v.desc != hdu.header.comments[k]:
                     print(pad + f'{k} description does not match. '
@@ -206,22 +209,21 @@ def main():
                           f'Found "{hdu.header.comments[k]}".')
                 # check type
                 if v.dtype is not None and \
-                   not isinstance(hdu.header[k], v.dtype):
-                    print(pad + f'{k}: {hdu.header[k]} {type(hdu.header[k])} '
+                   not isinstance(h_v, v.dtype):
+                    print(pad + f'{k}: {h_v} {type(h_v)} '
                           f'do not comply {v.dtype} format.')
                     continue
                 # check allowed values
                 if v.allowed_values is not None and \
-                   hdu.header[k] not in v.allowed_values:
-                    print(pad + f'{k} value {hdu.header[k]} is not in '
+                   h_v not in v.allowed_values:
+                    print(pad + f'{k} value {h_v} is not in '
                           f'{v.allowed_values} allowed values.')
                 # re for str values
-                if v.re is not None and not re.match(v.re, hdu.header[k]):
-                    print(pad + f'{k}: {hdu.header[k]} -> {v.re_error}.')
+                if v.re is not None and not re.match(v.re, h_v):
+                    print(pad + f'{k}: {h_v} -> {v.re_error}.')
                 # range for int and float values
-                if v.range is not None and \
-                   not v.range[0] <= hdu.header[k] <= v.range[1]:
-                    print(pad + f'{k}: {hdu.header[k]} -> {v.range_error}.')
+                if v.range is not None and not v.range[0] <= h_v <= v.range[1]:
+                    print(pad + f'{k}: {h_v} -> {v.range_error}.')
 
 
 if __name__ == '__main__':
