@@ -210,7 +210,8 @@ class Printer:
         if self._do_write and self.fmt == 'txt':
             self.file.write(s+'\n')
         if self._do_write and self.fmt == 'csv':
-            self.c.writerow([filename, keyword, value, type(value), error])
+            self.c.writerow([filename, keyword, value,
+                             type(value).__name__, error])
 
     def init_report(self, filename):
         """Print the report initialization."""
