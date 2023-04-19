@@ -5,8 +5,16 @@ This repository contains scripts to verify the images from the [SPARC4 - Simulta
 
 All scripts are meant to be used internally by the SPARC4 Developed team.
 
+Install
+-------
+
+This repository do not contain a python package by itself. It just contain scripts. So, you don't have to install it. Just download the scripts, install the dependencies of each one, and execute the scripts using python:
+
+```
+python <script.py> <options...>
+```
+
 Scripts
 -------
 
-- **sparc4_raw_header_check.py**: check if all the header keywords comply with the standard stabilished during instrument and data design. Any keyword that doesn't match the standard is printed, with the error and the standard.
-  This script depends on astropy package.
+- **sparc4_raw_header_check.py**: check if all the header keywords comply with the standard stabilished during instrument and data design. Any keyword that doesn't match the standard is printed, with the error and the standard. *This script depends on astropy package.*
