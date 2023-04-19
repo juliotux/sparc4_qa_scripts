@@ -57,7 +57,7 @@ _defs = {
     'GFOCUS': Field(dtype=None, desc='Guider focus position (mm)'),  # TODO: not defined yet
     'GUIDERA': Field(dtype=None, desc='RA of guider object'),  # TODO: not defined yet
     'GUIDEDEC': Field(dtype=None, desc='DEC of guider object'),  # TODO: not defined yet
-    'GMIR': Field(dtype=None, desc='Rotation angle of the guiding mirror  (deg)'),  # TODO: not defined yet
+    'GMIR': Field(dtype=None, desc='Rotation angle of the guiding mirror (deg)'),  # TODO: not defined yet
     'GFOC': Field(dtype=None, desc='Guiding focus position (mm)'),  # TODO: not defined yet
 
     # Observation
