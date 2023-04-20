@@ -108,6 +108,7 @@ _defs = {
     'CHANNEL': Field(dtype=int,
                      desc='Instrument channel: 1 (g), 2 (r), 3 (i), 4 (z)',
                      allowed_values=[1, 2, 3, 4]),
+    'FILTER': Field(dtype=str, desc='Filter'),
     'CCDSERN': Field(dtype=int,
                      desc='CCD Serial number'),
     'INSTMODE': Field(dtype=str, desc='Instrument mode: PHOT or POLAR',
