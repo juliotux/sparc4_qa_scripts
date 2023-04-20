@@ -11,46 +11,48 @@ from typing import List, Type
 @dataclass
 class Field:
     """Single header card definitions."""
-    dtype: Type  # data type of the keyword. Fits only accepts str, int, float, bool
+    dtype: Type  # data type of the keyword.: str, int, float, bool
     desc: str  # description of the keyword
     allowed_values: List = None  # list of allowed values
     range: List = None  # range of allowed values (min, max)
-    range_error: str = None  # error message if the value is out of range
     re: str = None  # regular expression to check the value for str values
-    re_error: str = None  # error message if the value does not match the regular expression
+    re_format: str = None  # explanation of re format
 
 
 _defs = {
     # FITS general and image
     'SIMPLE': Field(dtype=bool,
-                    desc='conforms to FITS standard'),
+                    desc='Conforms to FITS standard'),
     'BITPIX': Field(dtype=int,
-                    desc='array data type',
-                    allowed_values=[8, 16, 32]),
+                    desc='Bits per data value',
+                    allowed_values=[-64, -32, 8, 16, 32]),
     'NAXIS': Field(dtype=int,
-                   desc='number of array dimensions',
+                   desc='Number of array dimensions',
                    allowed_values=[2]),
-    'NAXIS1': Field(dtype=int, desc=''),
-    'NAXIS2': Field(dtype=int, desc=''),
+    'NAXIS1': Field(dtype=int, desc='Number of columns'),
+    'NAXIS2': Field(dtype=int, desc='Number of rows'),
+    'BSCALE': Field(dtype=(int, float),
+                    desc='Linear factor in scaling equation'),
+    'BZERO': Field(dtype=(int, float),
+                   desc='Zero point in scaling equation'),
+
+    # Image Rect
     'VBIN': Field(dtype=int, desc='Vertical binning (pix)'),
     'HBIN': Field(dtype=int, desc='Horizontal binning (pix)'),
     'INITLIN': Field(dtype=int, desc='Initial line (pix)'),
     'INITCOL': Field(dtype=int, desc='Initial column (pix)'),
     'FINALLIN': Field(dtype=int, desc='Final line (pix)'),
     'FINALCOL': Field(dtype=int, desc='Final column (pix)'),
-    'BSCALE': Field(dtype=(int, float), desc=''),  # type depends on BITPIX
-    'BZERO': Field(dtype=(int, float), desc=''),  # type depends on BITPIX
 
     # Observatory
     'OBSLAT': Field(dtype=float,
                     desc='Observatory North Latitude (DEG, -90 to 90)',
-                    range=[-90, 90],
-                    range_error='Latitude must be between -90 and 90'),
+                    range=[-90, 90]),
     'OBSLONG': Field(dtype=float,
-                     desc='Observatory East Longitude (DEG, 0 to 360)',
-                     range=[0, 360],
-                     range_error='Longitude must be between 0 and 360'),
-    'OBSATL': Field(dtype=float, desc='Observatory altitude (m)'),
+                     desc='Observatory East Longitude (DEG, -180 to 180)',
+                     range=[-180, 180]),
+    'OBSALT': Field(dtype=float,
+                    desc='Observatory elevation above sea level (m)'),
 
     # Guiding Camera
     'GFOCUS': Field(dtype=None, desc='Guider focus position (mm)'),  # TODO: not defined yet
@@ -65,49 +67,53 @@ _defs = {
     'OBJECT': Field(dtype=str,
                     desc='Object name'),
     'OBSTYPE': Field(dtype=str,
-                     desc='Image type: OBJECT, BIAS, FLAT, DARK, FOCUS',
-                     allowed_values=['OBJECT', 'BIAS', 'FLAT', 'DARK', 'FOCUS']),
+                     desc='Image type: OBJECT, ZERO, FLAT, DARK, FOCUS',
+                     allowed_values=['OBJECT', 'ZERO', 'FLAT',
+                                     'DARK', 'FOCUS']),
     'INSTRUME': Field(dtype=str, desc='Instrument name',
                       allowed_values=['SPARC4']),
-    'FILENAME': Field(dtype=str, desc='File name'),  # TODO: include RE?
+    'FILENAME': Field(dtype=str, desc='File name'),
     'DATE-OBS': Field(dtype=str,
                       desc='UTC at start of observation (isot)',
                       re=r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}',
-                      re_error='Date format must be YYYY-MM-DDTHH:MM:SS.SSS'),
+                      re_format='YYYY-MM-DDTHH:MM:SS.SSS'),
     'UTTIME': Field(dtype=str,
                     desc='UTC time at start of observation',
                     re=r'\d{2}:\d{2}:\d{2}\.\d{3}',
-                    re_error='Time format must be HH:MM:SS.SSS'),
+                    re_format='HH:MM:SS.SSS'),
     'UTDATE': Field(dtype=str,
                     desc='UTC date at start of observation',
                     re=r'\d{4}-\d{2}-\d{2}',
-                    re_error='Date format must be YYYY-MM-DD'),
-    'RA': Field(dtype=str, desc='Right ascension: HH:MM:SS.SSS',
-                re=r'\d{2}:\d{2}:\d{2}\.\d{3}',
-                re_error='RA format must be HH:MM:SS.SSS'),
-    'DEC': Field(dtype=str, desc='Declination: +- DD:MM:SS.SSS',
-                 re=r'[+-]\d{2}:\d{2}:\d{2}\.\d{3}',
-                 re_error='DEC format must be +-DD:MM:SS.SSS'),
+                    re_format='YYYY-MM-DD'),
+    'RA': Field(dtype=str, desc='Right ascension: HH:MM:SS',
+                re=r'\d{2}:\d{2}:\d{2}',
+                re_format='HH:MM:SS'),
+    'DEC': Field(dtype=str, desc='Declination: +- DD:MM:SS',
+                 re=r'[+-]\d{2}:\d{2}:\d{2}',
+                 re_format='+-DD:MM:SS'),
     'EQUINOX': Field(dtype=float, desc='Equinox  of coordinates',
                      allowed_values=[2000.0]),
-    'EXPTIME': Field(dtype=(int, float), desc='Exposure time (s)'),
+    'EXPTIME': Field(dtype=(int, float), desc='Exposure time (s)',
+                     range=[0, float('inf')]),
 
-    # SPARC4 Specific
+    # SPARC4 Cycles, sequences and frames
+    'NCYCLES': Field(dtype=int, desc='Number of cycles'),
+    'CYCLIND': Field(dtype=int, desc='Cycle index'),
+    'NFRAMES': Field(dtype=int, desc='Total number of frames in sequence'),
+    'FRAMEIND': Field(dtype=int, desc='Frame index in sequence'),
+    'NSEQ': Field(dtype=int, desc='Total number of sequences in cycle'),
+    'SEQINDEX': Field(dtype=int, desc='Sequence index in cycle'),
+
+    # SPARC4 Instrument
     'CHANNEL': Field(dtype=int,
                      desc='Instrument channel: 1 (g), 2 (r), 3 (i), 4 (z)',
                      allowed_values=[1, 2, 3, 4]),
     'CCDSERN': Field(dtype=int,
                      desc='CCD Serial number'),
-    'NCYCLES': Field(dtype=int, desc='Number of cycles'),
-    'CYCLIND': Field(dtype=int, desc='Cycle index in sequence'),
-    'NFRAMES': Field(dtype=int, desc='Number of frames in the cycle'),
-    'FRAMEIND': Field(dtype=int, desc='Frame index in the cycle'),
-    'NSEQ': Field(dtype=int, desc='Total number of exposures in sequence'),  # special check
-    'SEQINDEX': Field(dtype=int, desc='Exposure index in sequence'),
     'INSTMODE': Field(dtype=str, desc='Instrument mode: PHOT or POLAR',
                       allowed_values=['PHOT', 'POLAR']),
     'WPSEL': Field(dtype=str,
-                   desc='Waveplate: L2 (​​half-wave), L4 (quarter-wave), or None',
+                   desc='Waveplate: half-wave, quarter-wave or None',
                    allowed_values=['L2', 'L4', 'None']),
     'WPPOS': Field(dtype=int, desc='Waveplate index position'),
     'CALW': Field(dtype=str,
@@ -117,22 +123,26 @@ _defs = {
 
     # Detector
     'ACQMODE': Field(dtype=str, desc='Acquisition mode',
-                     allowed_values=['Kinetic', '']),  # TODO: all passible values
-    'PREAMP': Field(dtype=str, desc='Pre-amplifier gain'),  # TODO: include format or RE?
+                     allowed_values=['Kinetic', 'Single Scan']),
+    'PREAMP': Field(dtype=str, desc='Pre-amplifier gain',
+                    allowed_values=['Gain 1', 'Gain 2']),
     'READRATE': Field(dtype=(int, float), desc='Readout rate (MHz)'),
     'VSHIFT': Field(dtype=float, desc='Vertical shift speed (ms)'),
     'TRIGGER': Field(dtype=str, desc='Trigger mode',
-                     allowed_values=['Internal', 'External']),  # TODO: all passible values
+                     allowed_values=['Internal', 'External']),
     'EMMODE': Field(dtype=str, desc='Output amplifier mode',
-                    allowed_values=['Conventional']),  # TODO: all passible values
+                    allowed_values=['Conventional', 'EM']),
     'EMGAIN': Field(dtype=int, desc='Electron multiplier gain'),
     'SHUTTER': Field(dtype=str, desc='Shutter mode',
-                     allowed_values=['Open', 'Closed']),  # TODO: all passible values
+                     allowed_values=['Open', 'Closed']),
     'COOLER': Field(dtype=bool, desc='CCD cooler: T or F'),
     'CCDTEMP': Field(dtype=(int, float), desc='CCD temperature (deg C)'),
     'TGTEMP': Field(dtype=(int, float), desc='CCD target temperature (deg C)'),
-    'TEMPST': Field(dtype=str, desc='Temperature status',
-                    allowed_values=['TEMPERATURE_STABILIZED']),  # TODO: all passible values
+    'TEMPST': Field(dtype=str, desc='CCD temperature status',
+                    allowed_values=['TEMPERATURE_OFF',
+                                    'TEMPERATURE_NOT_REACHED',
+                                    'TEMPERATURE_NOT_STABILIZED',
+                                    'TEMPERATURE_STABILIZED']),
     'FRAMETRF': Field(dtype=bool, desc='Frame transfer: T or F'),
     'VCLKAMP': Field(dtype=str, desc='Clock amplitude: Normal, +1, +2, +3, +4',
                      allowed_values=['Normal', '+1', '+2', '+3', '+4']),
@@ -144,14 +154,13 @@ _defs = {
                       desc='Telescope focus position (arbitrary units)'),
     'TCSHA': Field(dtype=str, desc='TCS hour angle: HH:MM:SS',
                    re=r'\d{2}:\d{2}:\d{2}',
-                   re_error='TCSHA format must be HH:MM:SS'),
-    'TCSDATE': Field(dtype=str, desc='TCS UT date: DD/MM/YY HH:MM:SS',
-                     re=r'\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}',
-                     re_error='TCSDATE format must be DD/MM/YY HH:MM:SS'),
+                   re_format='HH:MM:SS'),
+    'TCSDATE': Field(dtype=str, desc='TCS UT date (isot)',
+                     re=r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}',
+                     re_format='YYYY-MM-DDTHH:MM:SS.SSS'),
     'INSTROT': Field(dtype=(int, float),
                      desc='Instrument rotator angle in degrees',
-                     range=[0, 360],
-                     range_error='INSTROT must be between 0 and 360'),
+                     range=[0, 360]),
 
     # Weather
     'EXTTEMP': Field(dtype=(int, float),
@@ -166,7 +175,7 @@ _defs = {
     # Software
     'ACSVRSN': Field(dtype=str, desc='Software version of the ACS',
                      re=r'v[\d.]+',
-                     re_error='ACSVRSN format must be v#.#.#'),
+                     re_format='v#.#.#'),
     'CTRLINTE': Field(dtype=str, desc='Graphical control interface of ACS',
                       allowed_values=['S4GUI']),
     'ACSMODE': Field(dtype=str, desc='ACS in simulated mode',
@@ -268,10 +277,12 @@ def main(files, printer):
                                   f'{v.allowed_values} allowed values.')
                 # re for str values
                 if v.re is not None and not re.match(v.re, h_v):
-                    printer.print(file, k, h_v, v.re_error)
+                    printer.print(file, k, h_v,
+                                  f'Value does not match {v.re_format}.')
                 # range for int and float values
                 if v.range is not None and not v.range[0] <= h_v <= v.range[1]:
-                    printer.print(file, k, h_v, v.range_error)
+                    printer.print(file, k, h_v,
+                                  f'Value not in range {list(v.range)}')
 
 
 if __name__ == '__main__':
