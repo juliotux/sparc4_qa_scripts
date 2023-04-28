@@ -18,3 +18,14 @@ Scripts
 -------
 
 - **sparc4_raw_header_check.py**: check if all the header keywords comply with the standard stabilished during instrument and data design. Any keyword that doesn't match the standard is printed, with the error and the standard. *This script depends on astropy package.*
+
+```bash
+# for simply print in terminal
+python sparc4_raw_header_check.py file1.fits file2.fits ...
+# for save output to txt
+python sparc4_raw_header_check.py -o report.txt -f txt file1.fits file2.fits ...
+# for save output to csv
+python sparc4_raw_header_check.py -o report.csv -f csv file1.fits file2.fits ...
+# for print changelog
+python sparc4_raw_header_check.py --changelog
+```
