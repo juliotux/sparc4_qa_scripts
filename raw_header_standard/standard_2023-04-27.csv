@@ -35,7 +35,7 @@ FILTER,str,Filter,,,,,,
 CCDSERN,int,CCD serial number,,,,,,
 INSTMODE,str,Instrument mode: PHOT or POLAR,"['PHOT', 'POLAR']",,,,,
 WPSEL,str,"Waveplate: half-wave, quarter-wave or None","['L2', 'L4', 'NONE']",,,,,
-WPPOS,int,"Waveplate index position from 1 to 16, 0 if none.",,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]",,,,It is 0 if WPSEL is NONE and range from 1 to 16 if WPSEL is not NONE
+WPPOS,int,"Waveplate index position from 1 to 16, 0 if none.","[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]",,,,,It is 0 if WPSEL is NONE and range from 1 to 16 if WPSEL is not NONE
 CALW,str,Selected element in calibration wheel,"['POLARIZER', 'DEPOLARIZER', 'NONE', 'PINHOLE', 'POS5']",,,,,
 ASEL,bool,Savart prism analyzer selected,,,,,,
 ACQMODE,str,Acquisition mode,"['Kinetic', 'Single Scan']",,,,,
