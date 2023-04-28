@@ -73,21 +73,22 @@ _number = (int, float)
 
 
 _defs = {
-    # FITS general and image
-    'SIMPLE': Field(dtype=bool,
-                    desc='Conforms to FITS standard'),
-    'BITPIX': Field(dtype=int,
-                    desc='Bits per data value',
-                    allowed_values=[-64, -32, 8, 16, 32]),
-    'NAXIS': Field(dtype=int,
-                   desc='Number of array dimensions',
-                   allowed_values=[2]),
-    'NAXIS1': Field(dtype=int, desc='Number of columns'),
-    'NAXIS2': Field(dtype=int, desc='Number of rows'),
-    'BSCALE': Field(dtype=(int, float),
-                    desc='Linear factor in scaling equation'),
-    'BZERO': Field(dtype=(int, float),
-                   desc='Zero point in scaling equation'),
+    # These keyords are ignored, as they are handled by astropy.io.fits
+    # # FITS general and image
+    # 'SIMPLE': Field(dtype=bool,
+    #                 desc='Conforms to FITS standard'),
+    # 'BITPIX': Field(dtype=int,
+    #                 desc='Bits per data value',
+    #                 allowed_values=[-64, -32, 8, 16, 32]),
+    # 'NAXIS': Field(dtype=int,
+    #                desc='Number of array dimensions',
+    #                allowed_values=[2]),
+    # 'NAXIS1': Field(dtype=int, desc='Number of columns'),
+    # 'NAXIS2': Field(dtype=int, desc='Number of rows'),
+    # 'BSCALE': Field(dtype=(int, float),
+    #                 desc='Linear factor in scaling equation'),
+    # 'BZERO': Field(dtype=(int, float),
+    #                desc='Zero point in scaling equation'),
 
     # Image Rect
     'VBIN': Field(dtype=int, desc='Vertical binning (pix)',
@@ -268,9 +269,8 @@ class CustomFunc:
 
 
 # all this keywords must be positive
-for i in ['NAXIS', 'NAXIS1', 'NAXIS2', 'OBSALT', 'EXPTIME',
-          'NCYCLES', 'CYCLIND', 'NFRAMES', 'NSEQ', 'SEQINDEX',
-          'READRATE', 'VSHIFT', 'GAIN', 'RDNOISE', 'HUMIDITY']:
+for i in ['OBSALT', 'EXPTIME', 'NCYCLES', 'CYCLIND', 'NFRAMES', 'NSEQ',
+          'SEQINDEX', 'READRATE', 'VSHIFT', 'GAIN', 'RDNOISE', 'HUMIDITY']:
     _defs[i]._check = CustomFunc._is_positive
     _defs[i].check_desc = 'must be positive'
 
@@ -360,7 +360,9 @@ def main(files, printer):
             for k in hdu.header.keys():
                 if k not in _defs:
                     h_v = hdu.header[k]
-                    if k not in ['COMMENT', 'HISTORY']:
+                    if k not in ['COMMENT', 'HISTORY', 'SIMPLE', 'BITPIX',
+                                 'NAXIS', 'BZERO', 'BSCALE', 'NAXIS1',
+                                 'NAXIS2']:
                         printer.print(file, k, h_v,
                                       f'{k} not in the standard.')
             # check all std keys

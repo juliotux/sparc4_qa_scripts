@@ -1,11 +1,4 @@
 Keyword,Type,Description,Allowed Values,Range,RegEx,RegEx Formar,Custom Check,Custom Check Description
-SIMPLE,bool,Conforms to FITS standard,,,,,,
-BITPIX,int,Bits per data value,"[-64, -32, 8, 16, 32]",,,,,
-NAXIS,int,Number of array dimensions,[2],,,,True,must be positive
-NAXIS1,int,Number of columns,,,,,True,must be positive
-NAXIS2,int,Number of rows,,,,,True,must be positive
-BSCALE,"int,float",Linear factor in scaling equation,,,,,,
-BZERO,"int,float",Zero point in scaling equation,,,,,,
 VBIN,int,Vertical binning (pix),,"[1, 1024]",,,,
 HBIN,int,Horizontal binning (pix),,"[1, 1024]",,,,
 INITLIN,int,Initial line (pix),,"[1, 1024]",,,,
