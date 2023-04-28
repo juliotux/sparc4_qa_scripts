@@ -37,6 +37,7 @@ class Field:
     re_format: str = None  # explanation of re format
     # custom check function. Recieves value and returns error message
     _check: callable = None
+    check_desc: str = None  # description of the custom check function
 
     def check(self, value, comment):
         """Value checking function. Returns the error message."""
@@ -52,7 +53,7 @@ class Field:
         # check allowed values
         if self.allowed_values is not None and \
            value not in self.allowed_values:
-            return 'value is not in {self.allowed_values} allowed values.'
+            return f'value is not in {self.allowed_values} allowed values.'
 
         # re for str values
         if self.re is not None and not re.match(self.re, value):
@@ -155,7 +156,7 @@ _defs = {
     'DEC': Field(dtype=str, desc='Declination: +- DD:MM:SS',
                  re=r'[+-]?\d{2}:\d{2}:\d{2}',
                  re_format='+-DD:MM:SS'),
-    'EQUINOX': Field(dtype=float, desc='Equinox  of coordinates'),
+    'EQUINOX': Field(dtype=float, desc='Equinox of coordinates'),
     'EXPTIME': Field(dtype=_number, desc='Exposure time (s)'),
 
     # SPARC4 Cycles, sequences and frames
@@ -172,7 +173,7 @@ _defs = {
                      allowed_values=[1, 2, 3, 4]),
     'FILTER': Field(dtype=str, desc='Filter'),
     'CCDSERN': Field(dtype=int,
-                     desc='CCD Serial number'),
+                     desc='CCD serial number'),
     'INSTMODE': Field(dtype=str, desc='Instrument mode: PHOT or POLAR',
                       allowed_values=['PHOT', 'POLAR']),
     'WPSEL': Field(dtype=str,
@@ -240,7 +241,7 @@ _defs = {
                       desc='Relative humidity (%), weather tower'),
 
     # Software
-    'ACSVRSN': Field(dtype=str, desc='Software version of the ACS',
+    'ACSVRSN': Field(dtype=str, desc='Software version of ACS',
                      re=r'v[\d.]+',
                      re_format='v#.#.#'),
     'CTRLINTE': Field(dtype=str, desc='Graphical control interface of ACS',
@@ -250,7 +251,7 @@ _defs = {
     'ICSMODE': Field(dtype=bool,
                      desc='ICS in real (T) or simulated (F) mode'),
     'TCSMODE': Field(dtype=bool,
-                     desc='TCS in  real (T) or simulated (F) mode')
+                     desc='TCS in real (T) or simulated (F) mode')
 }
 
 
@@ -271,21 +272,29 @@ for i in ['NAXIS', 'NAXIS1', 'NAXIS2', 'OBSALT', 'EXPTIME',
           'NCYCLES', 'CYCLIND', 'NFRAMES', 'NSEQ', 'SEQINDEX',
           'READRATE', 'VSHIFT', 'GAIN', 'RDNOISE', 'HUMIDITY']:
     _defs[i]._check = CustomFunc._is_positive
+    _defs[i].check_desc = 'must be positive'
 
 # float equal for values that must be fixed
 _defs['OBSLAT']._check = partial(CustomFunc._float_equal, expect=OPDCoords.lat,
                                  message='{value} coordinate do not match '
                                          'OPD {expect}')
+_defs['OBSLAT'].check_desc = 'must match OPD latitude'
 _defs['OBSLONG']._check = partial(CustomFunc._float_equal,
                                   expect=OPDCoords.long,
                                   message='{value} coordinate do not match '
                                           'OPD {expect}')
+_defs['OBSLONG'].check_desc = 'must match OPD longitude'
 _defs['OBSALT']._check = partial(CustomFunc._float_equal, expect=OPDCoords.alt,
                                  message='{value} altitude do not match '
                                          'OPD {expect}')
+_defs['OBSALT'].check_desc = 'must match OPD altitude'
 _defs['EQUINOX']._check = partial(CustomFunc._float_equal, expect=2000.0,
                                   message='{value} expected to be {expect}'
                                           ' equinox')
+_defs['EQUINOX'].check_desc = 'must be 2000.0 equinox'
+
+_defs['WPPOS'].check_desc = 'It is 0 if WPSEL is NONE and range from 1 to 16 '\
+                            'if WPSEL is not NONE'
 
 
 class Printer:
@@ -323,6 +332,8 @@ class Printer:
         if self._do_write and self.fmt == 'txt':
             self.file.write(s+'\n')
         if self._do_write and self.fmt == 'csv':
+            if isinstance(value, str):
+                value = value.strip('"')
             self.c.writerow([filename, keyword, value,
                              type(value).__name__, error])
 
@@ -374,7 +385,7 @@ def main(files, printer):
                               'WPPOS must be zero if WPSEL is NONE')
             if wpsel != 'NONE' and wppos == 0:
                 printer.print(file, 'WPPOS', wppos,
-                              'WPPOS must not be zero is WPSEL is not NONE')
+                              'WPPOS must not be zero if WPSEL is not NONE')
 
 
 if __name__ == '__main__':
@@ -408,7 +419,8 @@ if __name__ == '__main__':
         with open(args.print_standard, 'w') as f:
             c = csv.writer(f)
             c.writerow(['Keyword', 'Type', 'Description', 'Allowed Values',
-                        'Range', 'RegEx', 'RegEx Formar', 'Custom Check'])
+                        'Range', 'RegEx', 'RegEx Formar', 'Custom Check',
+                        'Custom Check Description'])
             for k, v in _defs.items():
                 # organize dtype name
                 if isinstance(v.dtype, tuple):
@@ -419,7 +431,7 @@ if __name__ == '__main__':
                 # if a custom check is used
                 check = True if v._check is not None else None
                 c.writerow([k, dt, v.desc, v.allowed_values, v.range,
-                            v.re, v.re_format, check])
+                            v.re, v.re_format, check, v.check_desc])
 
     # check the files
     if args.files is not None:

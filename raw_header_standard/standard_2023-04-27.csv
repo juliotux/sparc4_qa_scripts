@@ -1,0 +1,76 @@
+Keyword,Type,Description,Allowed Values,Range,RegEx,RegEx Formar,Custom Check,Custom Check Description
+SIMPLE,bool,Conforms to FITS standard,,,,,,
+BITPIX,int,Bits per data value,"[-64, -32, 8, 16, 32]",,,,,
+NAXIS,int,Number of array dimensions,[2],,,,True,must be positive
+NAXIS1,int,Number of columns,,,,,True,must be positive
+NAXIS2,int,Number of rows,,,,,True,must be positive
+BSCALE,"int,float",Linear factor in scaling equation,,,,,,
+BZERO,"int,float",Zero point in scaling equation,,,,,,
+VBIN,int,Vertical binning (pix),,"[1, 1024]",,,,
+HBIN,int,Horizontal binning (pix),,"[1, 1024]",,,,
+INITLIN,int,Initial line (pix),,"[1, 1024]",,,,
+INITCOL,int,Initial column (pix),,"[1, 1024]",,,,
+FINALLIN,int,Final line (pix),,"[1, 1024]",,,,
+FINALCOL,int,Final column (pix),,"[1, 1024]",,,,
+OBSLAT,float,"Observatory North Latitude (DEG, -90 to 90)",,"[-90, 90]",,,True,must match OPD latitude
+OBSLONG,float,"Observatory East Longitude (DEG, -180 to 180)",,"[-180, 180]",,,True,must match OPD longitude
+OBSALT,float,Observatory elevation above sea level (m),,,,,True,must match OPD altitude
+GUIDERA,str,RA of guider object,,,\d{2}:\d{2}:\d{2},HH:MM:SS,,
+GUIDEDEC,str,DEC of guider object,,,[+-]?\d{2}:\d{2}:\d{2},+-DD:MM:SS,,
+GMIR,"int,float",Rotation angle of the guiding mirror (deg),,"[0, 360]",,,,
+GFOC,"int,float",Guiding focus position (mm),,,,,,
+OBSERVER,str,Name(s) of observer(s),,,,,,
+OBJECT,str,Object name,,,,,,
+OBSTYPE,str,"Image type: OBJECT, ZERO, FLAT, DARK, FOCUS","['OBJECT', 'ZERO', 'FLAT', 'DARK', 'FOCUS']",,,,,
+INSTRUME,str,Instrument name,['SPARC4'],,,,,
+FILENAME,str,File name,,,,,,
+DATE-OBS,str,UTC at start of observation (isot),,,\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3},YYYY-MM-DDTHH:MM:SS.SSS,,
+UTTIME,str,UTC time at start of observation,,,\d{2}:\d{2}:\d{2}\.\d{3},HH:MM:SS.SSS,,
+UTDATE,str,UTC date at start of observation,,,\d{4}-\d{2}-\d{2},YYYY-MM-DD,,
+RA,str,Right ascension: HH:MM:SS,,,\d{2}:\d{2}:\d{2},HH:MM:SS,,
+DEC,str,Declination: +- DD:MM:SS,,,[+-]?\d{2}:\d{2}:\d{2},+-DD:MM:SS,,
+EQUINOX,float,Equinox of coordinates,,,,,True,must be 2000.0 equinox
+EXPTIME,"int,float",Exposure time (s),,,,,True,must be positive
+NCYCLES,int,Number of cycles,,,,,True,must be positive
+CYCLIND,int,Cycle index,,,,,True,must be positive
+NFRAMES,int,Number of frames in sequence,,,,,True,must be positive
+FRAMEIND,int,Frame index in sequence,,,,,,
+NSEQ,int,Number of sequences in one cycle,,,,,True,must be positive
+SEQINDEX,int,Sequence index in cycle,,,,,True,must be positive
+CHANNEL,int,"Instrument channel: 1 (g), 2 (r), 3 (i), 4 (z)","[1, 2, 3, 4]",,,,,
+FILTER,str,Filter,,,,,,
+CCDSERN,int,CCD serial number,,,,,,
+INSTMODE,str,Instrument mode: PHOT or POLAR,"['PHOT', 'POLAR']",,,,,
+WPSEL,str,"Waveplate: half-wave, quarter-wave or None","['L2', 'L4', 'NONE']",,,,,
+WPPOS,int,"Waveplate index position from 1 to 16, 0 if none.",,"[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]",,,,It is 0 if WPSEL is NONE and range from 1 to 16 if WPSEL is not NONE
+CALW,str,Selected element in calibration wheel,"['POLARIZER', 'DEPOLARIZER', 'NONE', 'PINHOLE', 'POS5']",,,,,
+ASEL,bool,Savart prism analyzer selected,,,,,,
+ACQMODE,str,Acquisition mode,"['Kinetic', 'Single Scan']",,,,,
+PREAMP,str,Pre-amplifier gain,"['Gain 1', 'Gain 2']",,,,,
+READRATE,"int,float",Readout rate (MHz),,,,,True,must be positive
+VSHIFT,float,Vertical shift speed (ms),,,,,True,must be positive
+TRIGGER,str,Trigger mode,"['Internal', 'External']",,,,,
+EMMODE,str,Output amplifier mode,"['Conventional', 'EM']",,,,,
+EMGAIN,int,Electron multiplier gain,,,,,,
+SHUTTER,str,Shutter mode,"['Open', 'Closed']",,,,,
+COOLER,bool,CCD cooler: T or F,,,,,,
+CCDTEMP,"int,float",CCD temperature (deg C),,,,,,
+TGTEMP,"int,float",CCD target temperature (deg C),,,,,,
+TEMPST,str,CCD temperature status,"['TEMPERATURE_OFF', 'TEMPERATURE_NOT_REACHED', 'TEMPERATURE_NOT_STABILIZED', 'TEMPERATURE_STABILIZED']",,,,,
+FRAMETRF,bool,Frame transfer: T or F,,,,,,
+VCLKAMP,str,"Clock amplitude: Normal, +1, +2, +3, +4","['Normal', '+1', '+2', '+3', '+4']",,,,,
+GAIN,"int,float",Gain (e-/ADU),,,,,True,must be positive
+RDNOISE,float,Read noise (e-),,,,,True,must be positive
+TELFOCUS,int,Telescope focus position (arbitrary units),,,,,,
+TCSHA,str,TCS hour angle: HH:MM:SS,,,\d{2}:\d{2}:\d{2},HH:MM:SS,,
+TCSDATE,str,TCS UT date (isot),,,\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3},YYYY-MM-DDTHH:MM:SS.SSS,,
+INSTROT,"int,float",Instrument rotator angle in degrees,,"[0, 360]",,,,
+EXTTEMP,"int,float","Temperature (deg C), weather tower",,,,,,
+AIRMASS,float,Airmass at start of observation,,"[1, inf]",,,,
+PRESSURE,"int,float","Barometric pressure (mb), weather tower",,,,,,
+HUMIDITY,"int,float","Relative humidity (%), weather tower",,,,,True,must be positive
+ACSVRSN,str,Software version of ACS,,,v[\d.]+,v#.#.#,,
+CTRLINTE,str,Graphical control interface of ACS,"['S4GUI', 'GEI']",,,,,
+ACSMODE,bool,ACS in real (T) or simulated (F) mode,,,,,,
+ICSMODE,bool,ICS in real (T) or simulated (F) mode,,,,,,
+TCSMODE,bool,TCS in real (T) or simulated (F) mode,,,,,,
