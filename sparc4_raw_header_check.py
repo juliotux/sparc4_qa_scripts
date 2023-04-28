@@ -35,6 +35,8 @@ class Field:
     range: List = None  # range of allowed values (min, max)
     re: str = None  # regular expression to check the value for str values
     re_format: str = None  # explanation of re format
+    # custom check function. Recieves value and returns error message
+    _check: callable = None
 
     def check(self, value, comment):
         """Value checking function. Returns the error message."""
@@ -61,11 +63,9 @@ class Field:
             if not self.range[0] <= value <= self.range[1]:
                 return f'Value not in range {list(self.range)}'
 
-        return self._check(value)
-
-    def _check(self, value):
-        """Custom checking function."""
-        return None
+        # custom check
+        if self._check is not None:
+            return self._check(value)
 
 
 _number = (int, float)
@@ -117,7 +117,7 @@ _defs = {
                      re=r'\d{2}:\d{2}:\d{2}',
                      re_format='HH:MM:SS'),
     'GUIDEDEC': Field(dtype=str, desc='DEC of guider object',
-                      re=r'\d{2}:\d{2}:\d{2}',
+                      re=r'[+-]?\d{2}:\d{2}:\d{2}',
                       re_format='+-DD:MM:SS'),
     'GMIR': Field(dtype=_number,
                   desc='Rotation angle of the guiding mirror (deg)',
@@ -379,8 +379,9 @@ def main(files, printer):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        prog='parc4_raw_header_checker',
-        description='Check SPARC4 raw image headers standards.')
+        prog='sparc4_raw_header_checker',
+        description='Check SPARC4 raw image headers standards.'
+    )
     parser.add_argument('-o', '--output', type=str,
                         help='Output file name to save the report.')
     parser.add_argument('-f', '--format', type=str,
@@ -389,12 +390,38 @@ if __name__ == '__main__':
                         'txt: plain text with the printed messages here.'
                         ' csv: comma separated values table.')
     parser.add_argument('--changelog', action='store_true')
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s ' + __version__)
+    parser.add_argument('--print-standard', type=str,
+                        help='Print the standard to a output CSV file.')
     parser.add_argument('files', type=str, nargs='*')
 
     args = parser.parse_args()
+
+    # print the changelog
     if args.changelog:
         for k, v in _chagelog.items():
             print(k, ':', v)
+
+    # print the standard to csv
+    if args.print_standard is not None:
+        with open(args.print_standard, 'w') as f:
+            c = csv.writer(f)
+            c.writerow(['Keyword', 'Type', 'Description', 'Allowed Values',
+                        'Range', 'RegEx', 'RegEx Formar', 'Custom Check'])
+            for k, v in _defs.items():
+                # organize dtype name
+                if isinstance(v.dtype, tuple):
+                    dt = ','.join([i.__name__ for i in v.dtype])
+                else:
+                    dt = v.dtype.__name__
+
+                # if a custom check is used
+                check = True if v._check is not None else None
+                c.writerow([k, dt, v.desc, v.allowed_values, v.range,
+                            v.re, v.re_format, check])
+
+    # check the files
     if args.files is not None:
         printer = Printer(args.output, args.format)
         main(args.files, printer)
